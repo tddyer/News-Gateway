@@ -9,22 +9,29 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    // maps new sources to news categories
+    // maps new source names to source objects
+//    private HashMap<String, ArrayList<Source>> categorySourcesData = new HashMap<>();
     private HashMap<String, ArrayList<String>> categorySourcesData = new HashMap<>();
 
     // contains all new sources that cover a given category
@@ -84,16 +91,117 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    // sets sources after downloaded (categories is already filtered down based off of the
+    // selection that triggered the source downloader)
+    private void setSources(ArrayList<String> sources, ArrayList<String> categories) {
+
+        // TODO: Change sources to source objects instead of just strings
+
+        // flush out old source data
+        categorySourcesData.clear();
+        sourcesDisplayed.clear();
+
+//        ArrayList<String> sourceNames = new ArrayList<>();
+//        for (Source s : sources)
+//            sourceNames.add(s.name);
+
+        // fill sources list (that displays sources in side drawer) using new sources data
+
+        if (sources != null) {
+            sourcesDisplayed.addAll(sources);
+//            sourcesDisplayed.addAll(sourceNames);
+            Collections.sort(sourcesDisplayed);
+        }
+
+        // fill sources map with new sources
+
+//        for (Source s : sources)
+//            categorySourcesData.put(s.name, s);
+
+
+
+
+    }
+
     private void selectItem(int pos) {
         // change bg from image to null to text is readable
-//        pager.setBackground(null);
+        viewPager.setBackground(null);
         currentSource = sourcesDisplayed.get(pos);
 
+        // TODO: convert this runnable format to a broadcasted intent
 //        SubRegionLoaderRunnable asrl = new SubRegionLoaderRunnable(this, currentSubRegion);
 //        new Thread(asrl).start();
 
         drawerLayout.closeDrawer(drawerList);
     }
+
+
+
+    // Menu onClick (also opens drawer using drawerToggle
+
+
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            Log.d(TAG, "onOptionsItemSelected: drawer_toggle " + item);
+            return true;
+        }
+
+        setTitle(item.getTitle());
+
+        // download news source data
+//        if (categorySourcesData.isEmpty()) {
+//            NewsSourceDownloader nsd = new NewsSourceDownloader(this);
+//            new Thread(nsd).start();
+//        }
+
+        sourcesDisplayed.clear();
+        ArrayList<String> lst = categorySourcesData.get(item.getTitle().toString());
+        if (lst != null) {
+            sourcesDisplayed.addAll(lst);
+        }
+
+        arrayAdapter.notifyDataSetChanged();
+        return super.onOptionsItemSelected(item);
+
+    }
+
+
+
+    // setup options menu reference so values can be dynamically loaded
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        optionsMenu = menu;
+        return true;
+    }
+
+
+
+    // drawer-toggle overrides
+
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Pass any configuration change to the drawer toggls
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+
+
+
+    /* ---------------- CUSTOM CLASSES ---------------- */
+
+
 
     private class CustomPageAdapter extends FragmentPagerAdapter {
         private long baseId = 0;
