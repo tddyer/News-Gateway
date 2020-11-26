@@ -14,16 +14,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -31,11 +27,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     // maps new source names to source objects
-//    private HashMap<String, ArrayList<Source>> categorySourcesData = new HashMap<>();
-    private HashMap<String, ArrayList<String>> categorySourcesData = new HashMap<>();
+    private HashMap<String, NewsSource> currentCategorySourcesData = new HashMap<>();
+//    private HashMap<String, ArrayList<String>> categorySourcesData = new HashMap<>();
 
     // contains all new sources that cover a given category
     private ArrayList<String> sourcesDisplayed = new ArrayList<>();
+
+    private ArrayList<String> currentCategories = new ArrayList<>();
 
     // menu + drawer vars
     private Menu optionsMenu;
@@ -59,8 +57,11 @@ public class MainActivity extends AppCompatActivity {
 
         // TODO: CREATE NewsReceiver object HERE
 
+
         drawerLayout = findViewById(R.id.drawer_layout);
         drawerList = findViewById(R.id.drawer_list);
+        arrayAdapter = new ArrayAdapter<>(this, R.layout.drawer_item, sourcesDisplayed);
+        drawerList.setAdapter(arrayAdapter);
 
         // setup drawer item onClick
         drawerList.setOnItemClickListener(
@@ -78,6 +79,11 @@ public class MainActivity extends AppCompatActivity {
                 R.string.access_close // accessibility desc for closing
         );
 
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+        }
+
         newsFragments = new ArrayList<>();
         pageAdapter = new CustomPageAdapter(getSupportFragmentManager());
         viewPager = findViewById(R.id.view_pager);
@@ -85,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
         // load data
 //        if (categorySourcesData.isEmpty()) {
-//            NewsSourceDownloader nsd = new NewsSourceDownloader(this);
+//            NewsSourceDownloader nsd = new NewsSourceDownloader(this, "");
 //            new Thread(nsd).start();
 //        }
 
@@ -94,40 +100,47 @@ public class MainActivity extends AppCompatActivity {
 
     // sets sources after downloaded (categories is already filtered down based off of the
     // selection that triggered the source downloader)
-    private void setSources(ArrayList<String> sources, ArrayList<String> categories) {
-
-        // TODO: Change sources to source objects instead of just strings
+    private void setSources(ArrayList<NewsSource> sources, ArrayList<String> categories) {
 
         // flush out old source data
-        categorySourcesData.clear();
+        currentCategorySourcesData.clear();
         sourcesDisplayed.clear();
 
-//        ArrayList<String> sourceNames = new ArrayList<>();
-//        for (Source s : sources)
-//            sourceNames.add(s.name);
-
-        // fill sources list (that displays sources in side drawer) using new sources data
 
         if (sources != null) {
-            sourcesDisplayed.addAll(sources);
-//            sourcesDisplayed.addAll(sourceNames);
+
+            // fill sources list (that displays sources in side drawer) using new sources data
+            for (NewsSource s : sources)
+                sourcesDisplayed.add(s.getName());
             Collections.sort(sourcesDisplayed);
+
+            // fill sources map with new sources
+            for (NewsSource s : sources)
+                currentCategorySourcesData.put(s.getName(), s);
         }
 
-        // fill sources map with new sources
 
-//        for (Source s : sources)
-//            categorySourcesData.put(s.name, s);
+        if (currentCategories == null && categories != null) {
+            currentCategories = new ArrayList<>();
+            currentCategories = new ArrayList<>();
+            currentCategories.addAll(categories);
+            Collections.sort(currentCategories);
+        }
+        currentCategories.add("all");
 
+//        for (String cat : currentCategories) {
+//            optionsMenu.add(cat);
+//        }
 
-
+        arrayAdapter.notifyDataSetChanged();
 
     }
 
     private void selectItem(int pos) {
-        // change bg from image to null to text is readable
+        // change bg from image to null so text is readable
         viewPager.setBackground(null);
         currentSource = sourcesDisplayed.get(pos);
+        setTitle(currentSource);
 
         // TODO: convert this runnable format to a broadcasted intent
 //        SubRegionLoaderRunnable asrl = new SubRegionLoaderRunnable(this, currentSubRegion);
@@ -138,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    // Menu onClick (also opens drawer using drawerToggle
+    // Menu onClick (also opens drawer using drawerToggle)
 
 
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -148,21 +161,20 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
-        setTitle(item.getTitle());
-
         // download news source data
 //        if (categorySourcesData.isEmpty()) {
-//            NewsSourceDownloader nsd = new NewsSourceDownloader(this);
+//            NewsSourceDownloader nsd = new NewsSourceDownloader(this, item.getTitle().toString());
 //            new Thread(nsd).start();
 //        }
 
-        sourcesDisplayed.clear();
-        ArrayList<String> lst = categorySourcesData.get(item.getTitle().toString());
-        if (lst != null) {
-            sourcesDisplayed.addAll(lst);
-        }
-
-        arrayAdapter.notifyDataSetChanged();
+//        sourcesDisplayed.clear();
+//        NewsSource lst = currentCategorySourcesData.get(item.getTitle().toString());
+//        if (lst != null) {
+//            for (NewsSource src : lst)
+//                sourcesDisplayed.add(src.getName());
+//        }
+//
+//        arrayAdapter.notifyDataSetChanged();
         return super.onOptionsItemSelected(item);
 
     }
