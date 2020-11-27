@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -90,17 +91,16 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(pageAdapter);
 
         // load data
-//        if (categorySourcesData.isEmpty()) {
-//            NewsSourceDownloader nsd = new NewsSourceDownloader(this, "");
-//            new Thread(nsd).start();
-//        }
+        if (currentCategorySourcesData.isEmpty()) {
+            NewsSourceDownloader nsd = new NewsSourceDownloader(this, "");
+            new Thread(nsd).start();
+        }
 
     }
 
 
-    // sets sources after downloaded (categories is already filtered down based off of the
-    // selection that triggered the source downloader)
-    private void setSources(ArrayList<NewsSource> sources, ArrayList<String> categories) {
+    // sets sources after the filtered sources have been downloaded from NewsSourceDownloader
+    public void setSources(ArrayList<NewsSource> sources, ArrayList<String> categories) {
 
         // flush out old source data
         currentCategorySourcesData.clear();
@@ -120,17 +120,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        if (currentCategories == null && categories != null) {
-            currentCategories = new ArrayList<>();
+        if (categories != null) {
             currentCategories = new ArrayList<>();
             currentCategories.addAll(categories);
             Collections.sort(currentCategories);
         }
-        currentCategories.add("all");
+        currentCategories.add(0, "all");
 
-//        for (String cat : currentCategories) {
-//            optionsMenu.add(cat);
-//        }
+        for (String cat : currentCategories) {
+            optionsMenu.add(cat);
+        }
 
         arrayAdapter.notifyDataSetChanged();
 
@@ -182,13 +181,11 @@ public class MainActivity extends AppCompatActivity {
 
 
     // setup options menu reference so values can be dynamically loaded
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        optionsMenu = menu;
+        this.optionsMenu = menu;
         return true;
     }
-
 
 
     // drawer-toggle overrides
