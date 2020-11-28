@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     // contains all new sources that cover a given category
     private ArrayList<String> sourcesDisplayed = new ArrayList<>();
 
-    private ArrayList<String> currentCategories = new ArrayList<>();
+    private ArrayList<String> currentCategories;
 
     // menu + drawer vars
     private Menu optionsMenu;
@@ -120,15 +120,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        if (categories != null) {
+        if (categories != null && currentCategories == null) {
             currentCategories = new ArrayList<>();
             currentCategories.addAll(categories);
             Collections.sort(currentCategories);
-        }
-        currentCategories.add(0, "all");
+            currentCategories.add(0, "all");
 
-        for (String cat : currentCategories) {
-            optionsMenu.add(cat);
+            // update options menu items with new categories
+            optionsMenu.clear();
+            for (String cat : currentCategories) {
+                optionsMenu.add(cat);
+            }
         }
 
         arrayAdapter.notifyDataSetChanged();
@@ -161,11 +163,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // download news source data
-//        if (categorySourcesData.isEmpty()) {
-//            NewsSourceDownloader nsd = new NewsSourceDownloader(this, item.getTitle().toString());
-//            new Thread(nsd).start();
+//        if (currentCategorySourcesData.isEmpty()) {
+        NewsSourceDownloader nsd = new NewsSourceDownloader(this, item.getTitle().toString());
+        new Thread(nsd).start();
 //        }
-
+//
 //        sourcesDisplayed.clear();
 //        NewsSource lst = currentCategorySourcesData.get(item.getTitle().toString());
 //        if (lst != null) {
