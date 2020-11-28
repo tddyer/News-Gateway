@@ -9,14 +9,15 @@
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:background="@drawable/newspaper"/>
 
     <ListView
         android:id="@+id/drawer_list"
         android:layout_width="200dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:textColor="@android:color/background_dark"
+        android:background="@color/drawer_bg"
         android:choiceMode="singleChoice" />
 
 
