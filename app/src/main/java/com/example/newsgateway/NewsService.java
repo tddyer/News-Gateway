@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
@@ -17,7 +18,38 @@ public class NewsService extends Service {
     private int count = 1;
     private final ArrayList<NewsArticle> newsArticles = new ArrayList<>();
 
+    private ServiceReceiver serviceReceiver;
+
     static final String ACTION_MSG_TO_SERVICE = "ACTION_MSG_TO_SERVICE";
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        serviceReceiver = new ServiceReceiver();
+        IntentFilter filter = new IntentFilter(ACTION_MSG_TO_SERVICE);
+        registerReceiver(serviceReceiver, filter);
+
+        new Thread(() -> {
+
+            while (running) {
+                while (newsArticles.isEmpty()) {
+                    try {
+                        Thread.sleep(250);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                Intent intent1 = new Intent();
+                intent1.setAction(MainActivity.ACTION_NEWS_STORY);
+                intent1.putExtra("ARTICLES", newsArticles);
+                sendBroadcast(intent1);
+
+                newsArticles.clear();
+            }
+        }).start();
+
+        return START_STICKY;
+    }
 
     @Nullable
     @Override
@@ -27,10 +59,8 @@ public class NewsService extends Service {
 
     @Override
     public void onDestroy() {
-        // 1: unregister service receiver
-
-        // 2: set service's thread's running flag to false
-
+        unregisterReceiver(serviceReceiver);
+        running = false;
         super.onDestroy();
     }
 
@@ -46,14 +76,11 @@ public class NewsService extends Service {
 
     /* ------------ Service Receiver Class ------------ */
 
-    public class ServiceReceiver extends BroadcastReceiver {
+    class ServiceReceiver extends BroadcastReceiver {
 
         private static final String TAG = "ServiceReceiver";
-        private NewsService newsService;
 
-        public ServiceReceiver(NewsService newsService) {
-            this.newsService = newsService;
-        }
+        public ServiceReceiver() {}
 
         @Override
         public void onReceive(Context context, Intent intent) {

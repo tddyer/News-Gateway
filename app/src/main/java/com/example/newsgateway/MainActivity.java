@@ -12,6 +12,7 @@ import androidx.viewpager.widget.ViewPager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
@@ -52,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
     private CustomPageAdapter pageAdapter;
     private ViewPager viewPager;
 
+    private NewsReceiver newsReceiver;
+
     static final String ACTION_NEWS_STORY = "ACTION_NEWS_STORY";
 
     @Override
@@ -59,9 +62,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // TODO: START SERVICE (NewsService) HERE
+        // start NewsService
+        Intent intent = new Intent(MainActivity.this, NewsService.class);
+        startService(intent);
 
-        // TODO: CREATE NewsReceiver object HERE
+        // create NewsReceiver
+        newsReceiver = new NewsReceiver(this);
 
 
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -103,6 +109,19 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onPostResume() {
+        IntentFilter filter = new IntentFilter(ACTION_NEWS_STORY);
+        newsReceiver = new NewsReceiver(this);
+        registerReceiver(newsReceiver, filter);
+        super.onPostResume();
+    }
+
+    @Override
+    protected void onStop() {
+        unregisterReceiver(newsReceiver);
+        super.onStop();
+    }
 
     // sets sources after the filtered sources have been downloaded from NewsSourceDownloader
     public void setSources(ArrayList<NewsSource> sources, ArrayList<String> categories) {
@@ -292,9 +311,8 @@ public class MainActivity extends AppCompatActivity {
             newsFragments.clear();
 
             for (int i = 0; i < articles.size(); i++) {
-//                newsFragments.add(
-//                        // PUT NEWS FRAGMENT HERE USING ARTICLE I
-//                )
+                newsFragments.add(
+                        NewsFragment.newInstance(articles.get(i), i+1, articles.size()));
             }
 
             pageAdapter.notifyDataSetChanged();
