@@ -9,6 +9,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
@@ -48,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
     private List<Fragment> newsFragments;
     private CustomPageAdapter pageAdapter;
     private ViewPager viewPager;
+
+    static final String ACTION_NEWS_STORY = "ACTION_NEWS_STORY";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -251,6 +256,49 @@ public class MainActivity extends AppCompatActivity {
         void notifyChangeInPosition(int n) {
             // shift the ID returned by getItemId outside the range of all previous fragments
             baseId += getCount() + n;
+        }
+    }
+
+    public class NewsReceiver extends BroadcastReceiver {
+
+        private static final String TAG = "NewsReceiver";
+        private MainActivity mainActivity;
+
+        public NewsReceiver(MainActivity mainActivity) {
+            this.mainActivity = mainActivity;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String action = intent.getAction();
+
+            if (action == null)
+                return;
+
+            if (action == ACTION_NEWS_STORY) {
+                // get the source and run article downloader using the source
+                ArrayList<NewsArticle> articles = (ArrayList<NewsArticle>) intent.getSerializableExtra("ARTICLES");
+                redoFragments(articles);
+            }
+        }
+
+        public void redoFragments(ArrayList<NewsArticle> articles) {
+            setTitle(mainActivity.currentSource);
+
+            for (int i = 0; i < pageAdapter.getCount(); i++)
+                pageAdapter.notifyChangeInPosition(i);
+
+            newsFragments.clear();
+
+            for (int i = 0; i < articles.size(); i++) {
+//                newsFragments.add(
+//                        // PUT NEWS FRAGMENT HERE USING ARTICLE I
+//                )
+            }
+
+            pageAdapter.notifyDataSetChanged();
+            viewPager.setCurrentItem(0);
         }
     }
 }

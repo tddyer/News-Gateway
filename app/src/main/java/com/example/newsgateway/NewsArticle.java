@@ -1,6 +1,8 @@
 package com.example.newsgateway;
 
-public class NewsArticle {
+import java.io.Serializable;
+
+public class NewsArticle implements Serializable {
 
     private String author;
     private String title;
