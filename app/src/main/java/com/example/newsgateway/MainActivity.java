@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
 
     // maps new source names to source objects
     private HashMap<String, NewsSource> currentCategorySourcesData = new HashMap<>();
-//    private HashMap<String, ArrayList<String>> categorySourcesData = new HashMap<>();
 
     // contains all new sources that cover a given category
     private ArrayList<String> sourcesDisplayed = new ArrayList<>();
@@ -56,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private NewsReceiver newsReceiver;
 
     static final String ACTION_NEWS_STORY = "ACTION_NEWS_STORY";
+    static final String ACTION_MSG_TO_SERVICE = "ACTION_MSG_TO_SERVICE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,11 +165,12 @@ public class MainActivity extends AppCompatActivity {
         // change bg from image to null so text is readable
         viewPager.setBackground(null);
         currentSource = sourcesDisplayed.get(pos);
-        setTitle(currentSource);
 
-        // TODO: convert this runnable format to a broadcasted intent
-//        SubRegionLoaderRunnable asrl = new SubRegionLoaderRunnable(this, currentSubRegion);
-//        new Thread(asrl).start();
+        // create intent and send broadcast
+        Intent intent = new Intent();
+        intent.setAction(ACTION_MSG_TO_SERVICE);
+        intent.putExtra("SOURCE", currentSource);
+        sendBroadcast(intent);
 
         drawerLayout.closeDrawer(drawerList);
     }
@@ -187,19 +188,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // download news source data
-//        if (currentCategorySourcesData.isEmpty()) {
         NewsSourceDownloader nsd = new NewsSourceDownloader(this, item.getTitle().toString());
         new Thread(nsd).start();
-//        }
-//
-//        sourcesDisplayed.clear();
-//        NewsSource lst = currentCategorySourcesData.get(item.getTitle().toString());
-//        if (lst != null) {
-//            for (NewsSource src : lst)
-//                sourcesDisplayed.add(src.getName());
-//        }
-//
-//        arrayAdapter.notifyDataSetChanged();
+
         return super.onOptionsItemSelected(item);
 
     }

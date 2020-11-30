@@ -20,12 +20,10 @@ public class NewsService extends Service {
 
     private ServiceReceiver serviceReceiver;
 
-    static final String ACTION_MSG_TO_SERVICE = "ACTION_MSG_TO_SERVICE";
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         serviceReceiver = new ServiceReceiver();
-        IntentFilter filter = new IntentFilter(ACTION_MSG_TO_SERVICE);
+        IntentFilter filter = new IntentFilter(MainActivity.ACTION_MSG_TO_SERVICE);
         registerReceiver(serviceReceiver, filter);
 
         new Thread(() -> {
@@ -90,7 +88,7 @@ public class NewsService extends Service {
             if (action == null)
                 return;
 
-            if (action == NewsService.ACTION_MSG_TO_SERVICE) {
+            if (action == MainActivity.ACTION_MSG_TO_SERVICE) {
                 // get the source and run article downloader using the source
                 String source = intent.getStringExtra("SOURCE");
                 NewsArticleDownloader nad = new NewsArticleDownloader(this, source);
