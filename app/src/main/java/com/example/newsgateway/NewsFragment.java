@@ -50,22 +50,38 @@ public class NewsFragment extends Fragment {
             int total = args.getInt("TOTAL");
 
             TextView headline = fragment_view.findViewById(R.id.articleHeadline);
-            headline.setText(currArticle.getTitle());
+            String title = currArticle.getTitle();
+            if (title != null)
+                headline.setText(title);
+            else
+                headline.setText("");
             headline.setOnClickListener(v -> openArticle(currArticle.getUrl()));
 
             TextView date = fragment_view.findViewById(R.id.articleDate);
-            date.setText(currArticle.getPublishDate());
+            String published = currArticle.getPublishDate();
+            if (!published.equals("null"))
+                date.setText(published);
+            else
+                date.setText("");
 
             TextView authors = fragment_view.findViewById(R.id.articleAuthors);
-            authors.setText(currArticle.getAuthor());
+            String auth = currArticle.getAuthor();
+            if (!auth.equals("null"))
+                authors.setText(auth);
+            else
+                authors.setText("");
 
             ImageView image = fragment_view.findViewById(R.id.articleImage);
             String imageUrl = currArticle.getImageUrl();
-            if (imageUrl != null)
+            if (!imageUrl.equals("null"))
                 loadImage(imageUrl, image, currArticle);
 
             TextView description = fragment_view.findViewById(R.id.articleText);
-            description.setText(currArticle.getDescription());
+            String desc = currArticle.getDescription();
+            if (!desc.equals("null"))
+                description.setText(desc);
+            else
+                description.setText("");
             description.setOnClickListener(v -> openArticle(currArticle.getUrl()));
 
             TextView pageNum = fragment_view.findViewById(R.id.pageNumber);

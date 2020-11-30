@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle drawerToggle;
     private ArrayAdapter<String> arrayAdapter;
     private String currentSource;
+    private static String currentTitle;
 
     // fragment vars
     private List<Fragment> newsFragments;
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.d(TAG, "onCreate: ");
 
         // start NewsService
         Intent intent = new Intent(MainActivity.this, NewsService.class);
@@ -169,10 +172,14 @@ public class MainActivity extends AppCompatActivity {
         // create intent and send broadcast
         Intent intent = new Intent();
         intent.setAction(ACTION_MSG_TO_SERVICE);
-        intent.putExtra("SOURCE", currentSource);
+        intent.putExtra("SOURCE", currentCategorySourcesData.get(currentSource).getId());
         sendBroadcast(intent);
 
         drawerLayout.closeDrawer(drawerList);
+    }
+
+    public static void resetTitle(String s) {
+        currentTitle = s;
     }
 
 
@@ -287,6 +294,9 @@ public class MainActivity extends AppCompatActivity {
                 return;
 
             if (action == ACTION_NEWS_STORY) {
+
+                Log.d(TAG, "onReceive: RECIEVED ARTICLES FROM NEWSSERIVE - SETTING UP FRAGMENTS FOR VIEWING");
+
                 // get the source and run article downloader using the source
                 ArrayList<NewsArticle> articles = (ArrayList<NewsArticle>) intent.getSerializableExtra("ARTICLES");
                 redoFragments(articles);

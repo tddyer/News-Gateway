@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -20,8 +21,15 @@ public class NewsService extends Service {
 
     private ServiceReceiver serviceReceiver;
 
+    private NewsService newsService;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        Log.d(TAG, "onStartCommand: STARTING NEWSSERVICE");
+
+        newsService = this;
+        
         serviceReceiver = new ServiceReceiver();
         IntentFilter filter = new IntentFilter(MainActivity.ACTION_MSG_TO_SERVICE);
         registerReceiver(serviceReceiver, filter);
@@ -29,6 +37,7 @@ public class NewsService extends Service {
         new Thread(() -> {
 
             while (running) {
+                Log.d(TAG, "onStartCommand: NEWSSERVICE THREAD RUNNING - WAITING FOR ARTICLES");
                 while (newsArticles.isEmpty()) {
                     try {
                         Thread.sleep(250);
@@ -37,6 +46,7 @@ public class NewsService extends Service {
                     }
                 }
 
+                Log.d(TAG, "onStartCommand: NEWSSERVICE THREAD RUNNING - ARTICLES RECEIVED");
                 Intent intent1 = new Intent();
                 intent1.setAction(MainActivity.ACTION_NEWS_STORY);
                 intent1.putExtra("ARTICLES", newsArticles);
@@ -83,6 +93,8 @@ public class NewsService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
 
+            Log.d(TAG, "onReceive: SERVICE RECEIVED");
+
             String action = intent.getAction();
 
             if (action == null)
@@ -91,7 +103,8 @@ public class NewsService extends Service {
             if (action == MainActivity.ACTION_MSG_TO_SERVICE) {
                 // get the source and run article downloader using the source
                 String source = intent.getStringExtra("SOURCE");
-                NewsArticleDownloader nad = new NewsArticleDownloader(this, source);
+                Log.d(TAG, "onReceive: LAUNCHING ARTICLE DOWNLOADER WITH SOURCE " + source);
+                NewsArticleDownloader nad = new NewsArticleDownloader(this, newsService, source);
                 new Thread(nad).start();
             }
         }
